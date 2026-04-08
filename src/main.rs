@@ -1,7 +1,7 @@
 
 
 
-use std::io::Read;
+use std::io::{self, Read, Write};
 use std::fs::File;
 use std::env;
 
@@ -25,7 +25,7 @@ fn main() {
                 let mut code_lines: Vec<lexer::LineOfCode> = Vec::new();
 
                 for (lineno, line) in s.lines().enumerate() {
-                    let result = lexer::tokenize_line(line);
+                    let result = lexer::tokenize_line(line, false);
                     match result {
                         Ok(x) => {
                             // println!("{}", line);
@@ -45,5 +45,64 @@ fn main() {
             }
             Err(err) => println!("Getting file contents failed with error: {}", err),
         };
+    } else {
+        let mut code_lines: Vec<lexer::LineOfCode> = Vec::new();
+        let mut stdout = io::stdout();
+
+        println!("RBASIC Interactive Shell");
+        println!("Type 'RUN' to execute program, 'LIST' to view, 'CLEAR' to reset, 'QUIT' to exit");
+
+        loop {
+            print!("] ");
+            stdout.flush().unwrap();
+
+            let mut input = String::new();
+            match io::stdin().read_line(&mut input) {
+                Ok(0) => {
+                    println!();
+                    break;
+                }
+                Ok(_) => {}
+                Err(e) => {
+                    eprintln!("Error reading input: {}", e);
+                    break;
+                }
+            }
+
+            let input = input.trim();
+            if input.is_empty() {
+                continue;
+            }
+
+            match input.to_uppercase().as_str() {
+                "QUIT" | "EXIT" => break,
+                "RUN" => {
+                    match evaluator::evaluate(code_lines.clone()) {
+                        Ok(msg) => println!("{}", msg),
+                        Err(msg) => println!("Execution failed: {}", msg),
+                    }
+                    continue;
+                }
+                "LIST" => {
+                    for line in &code_lines {
+                        println!("{}", line.text.as_deref().unwrap_or(""));
+                    }
+                    continue;
+                }
+                "CLEAR" => {
+                    code_lines.clear();
+                    println!("Program cleared.");
+                    continue;
+                }
+                _ => {}
+            }
+
+            match lexer::tokenize_line(input, true) {
+                Ok(line_of_code) => {
+                    code_lines.push(line_of_code);
+                }
+                Err(e) => println!("Error: {}", e),
+            }
+        }
     }
 }

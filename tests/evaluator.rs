@@ -4,7 +4,7 @@ use rbasic::lexer::*;
 use rbasic::evaluator::*;
 
 fn eval_line(line: &str) -> Result<String, String> {
-    let result = tokenize_line(line);
+    let result = tokenize_line(line, false);
     assert!(result.is_ok());
     let code_line = result.unwrap();
     evaluate(vec![code_line])

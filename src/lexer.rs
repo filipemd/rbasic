@@ -14,9 +14,10 @@ pub struct TokenAndPos(pub u32, pub token::Token);
 pub struct LineOfCode {
     pub line_number: LineNumber,
     pub tokens: Vec<TokenAndPos>,
+    pub text: Option<String>,
 }
 
-pub fn tokenize_line(line: &str) -> Result<LineOfCode, String> {
+pub fn tokenize_line(line: &str, store_text: bool) -> Result<LineOfCode, String> {
     let mut char_iter = line.chars().enumerate().peekable();
     let mut line_number = LineNumber(0);
     let mut tokens: Vec<TokenAndPos> = Vec::new();
@@ -136,6 +137,7 @@ pub fn tokenize_line(line: &str) -> Result<LineOfCode, String> {
     Ok(LineOfCode {
         line_number,
         tokens,
+        text: if store_text { Some(line.to_string()) } else { None },
     })
 }
 
