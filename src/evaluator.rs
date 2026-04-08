@@ -156,10 +156,7 @@ pub fn evaluate(code_lines: Vec<lexer::LineOfCode>) -> Result<String, String> {
 
                             // Store the string now, can coerce to number later if needed
                             // Can overwrite an existing value
-                            context
-                                .variables
-                                .entry(variable.clone().to_string())
-                                .or_insert(value);
+                            context.variables.insert(variable.clone().to_string(), value);
                         }
 
                         _ => {
