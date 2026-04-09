@@ -62,7 +62,7 @@ In addition to making things more idiomatic and cleaner, I'd like to add the
 following features:
 
   * ~~Floating point numbers~~
-  * Additional operators, like % (modulus)
+  * ~~Additional operators, like % (modulus)~~
   * Built-in functions, like:
     * Trigonometric Functions (SIN, COS, TAN)
     * Random number generator (RAND(max value))
