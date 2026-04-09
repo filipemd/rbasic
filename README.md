@@ -9,12 +9,12 @@ A BASIC interpreter in Rust, in the fashion of Apple BASIC or GWBASIC.
 The following features are currently implemented:
 
   * Support for primitive data types:
-    * Integers
+    * Numbers
     * Strings
     * Boolean values
   * The following operators in expressions
-    * +, -, *, / for integers
-    * - (unary minus) for integers
+    * +, -, *, / for numbers
+    * - (unary minus) for numbers
     * + or concatenation for strings
     * ! (Boolean not) for Boolean values
     * = (equals), <> (not equals), >, <, >=, <= 
@@ -36,7 +36,7 @@ Error handling is limited, and some error messages are swallowed and not
 propagated up. Additionally, when positional errors are shown they are shown
 from 0-based indices, instead of 1-based which may be more natural.
 
-I'm probably not handling string and integer conversions for all cases in all
+I'm probably not handling string and number conversions for all cases in all
 operations.
 
 # Running Examples #

@@ -4,7 +4,7 @@ pub enum Token {
 
     // Variables and Literals
     Variable(String),
-    Number(i32),
+    Number(f64),
     BString(String),
 
     // Binary Operators

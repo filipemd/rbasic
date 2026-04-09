@@ -53,9 +53,9 @@ fn test_boolean_lt_true_true() {
 // ============================================
 #[test]
 fn test_lteq_correctness() {
-    let a = RBasicValue::Number(5);
-    let b = RBasicValue::Number(5);
-    let c = RBasicValue::Number(10);
+    let a = RBasicValue::Number(5.0);
+    let b = RBasicValue::Number(5.0);
+    let c = RBasicValue::Number(10.0);
     
     // 5 <= 5 should be true
     assert_eq!(a.lteq(&b).unwrap(), true);
@@ -67,9 +67,9 @@ fn test_lteq_correctness() {
 
 #[test]
 fn test_gteq_correctness() {
-    let a = RBasicValue::Number(5);
-    let b = RBasicValue::Number(5);
-    let c = RBasicValue::Number(10);
+    let a = RBasicValue::Number(5.0);
+    let b = RBasicValue::Number(5.0);
+    let c = RBasicValue::Number(10.0);
     
     // 5 >= 5 should be true
     assert_eq!(a.gteq(&b).unwrap(), true);
