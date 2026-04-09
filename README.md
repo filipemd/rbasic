@@ -61,7 +61,7 @@ lot of copy and pasted code that I didn't know how to make cleaner.
 In addition to making things more idiomatic and cleaner, I'd like to add the
 following features:
 
-  * Floating point numbers
+  * ~~Floating point numbers~~
   * Additional operators, like % (modulus)
   * Built-in functions, like:
     * Trigonometric Functions (SIN, COS, TAN)
