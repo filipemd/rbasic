@@ -391,10 +391,11 @@ fn parse_and_eval_expression<'a>(
                 }
             }
 
-            // If expression is well formed, there will only be the result on the stack
-            assert!(stack.len() == 1);
-            // println!("Final expression result: {:?}", stack[0]);
-            Ok(stack[0].clone())
+            if stack.len() == 1 {
+                Ok(stack.pop().unwrap())
+            } else {
+                Err("Invalid expression: unbalanced operands and operators".to_string())
+            }
         }
 
         _ => Err("Invalid expression!".to_string()),
