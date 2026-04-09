@@ -4,8 +4,10 @@ use itertools::Itertools;
 
 use std::str::FromStr;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct LineNumber(pub u32);
+/*#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct LineNumber(pub u32);*/
+
+pub type LineNumber = u32;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct TokenAndPos(pub u32, pub token::Token);
@@ -13,13 +15,13 @@ pub struct TokenAndPos(pub u32, pub token::Token);
 #[derive(Debug, Clone, PartialEq)]
 pub struct LineOfCode {
     pub line_number: LineNumber,
-    pub tokens: Vec<TokenAndPos>,
     pub text: Option<String>,
+    pub tokens: Vec<TokenAndPos>,
 }
 
 pub fn tokenize_line(line: &str, store_text: bool) -> Result<LineOfCode, String> {
     let mut char_iter = line.chars().enumerate().peekable();
-    let mut line_number = LineNumber(0);
+    let mut line_number = 0;
     let mut tokens: Vec<TokenAndPos> = Vec::new();
 
     while char_iter.peek() != None {
@@ -37,7 +39,7 @@ pub fn tokenize_line(line: &str, store_text: bool) -> Result<LineOfCode, String>
                 let num_str: String = num_chars.into_iter().collect();
 
                 match u32::from_str(num_str.as_str()) {
-                    Ok(number) => line_number = LineNumber(number),
+                    Ok(number) => line_number = number,
                     Err(_) => {
                         return Err(format!(
                             "Line must start with number followed by \
@@ -136,8 +138,8 @@ pub fn tokenize_line(line: &str, store_text: bool) -> Result<LineOfCode, String>
 
     Ok(LineOfCode {
         line_number,
+        text: if store_text&&!tokens.is_empty() { Some(line.to_string()) } else { None },
         tokens,
-        text: if store_text { Some(line.to_string()) } else { None },
     })
 }
 

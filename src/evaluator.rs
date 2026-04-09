@@ -1,4 +1,5 @@
 use crate::lexer;
+use crate::lexer::LineNumber;
 use crate::token;
 use crate::value;
 
@@ -22,34 +23,39 @@ impl RBasicContext {
     }
 }
 
+pub fn get_line_map<'a>(
+    code_lines: &'a [lexer::LineOfCode],
+    btree: &mut BTreeMap<LineNumber, &'a lexer::LineOfCode>,
+) {
+    for line in code_lines {
+        btree.insert(line.line_number.clone(), line);
+    }
+}
+
 pub fn evaluate(code_lines: Vec<lexer::LineOfCode>) -> Result<String, String> {
     let mut context = RBasicContext::new();
-    let mut lineno_to_code = BTreeMap::new();
     let mut line_map = BTreeMap::new();
 
-    for (index, line) in code_lines.iter().enumerate() {
-        line_map.insert(&line.line_number, index);
-        lineno_to_code.insert(&line.line_number, &line.tokens);
-    }
+    get_line_map(&code_lines, &mut line_map);
 
-    let line_numbers: Vec<_> = line_map.keys().clone().collect();
-    let num_lines = line_numbers.len();
-    let mut line_index = 0;
     // TODO: Feels hacky
     let mut line_has_goto = false;
 
+    // Start from the first line in the BTreeMap
+    let mut current_line_number = match line_map.keys().next() {
+        Some(n) => *n,
+        None => return Ok("Completed Successfully".to_string()),
+    };
+
     loop {
-
-        // If we're at the end of the program then we stop
-        if line_index == num_lines {
-               break;
-        }
-
-        let line_number = line_numbers[line_index];
-        let tokens = &lineno_to_code[line_number];
+        let line = match line_map.get(&current_line_number) {
+            Some(l) => l,
+            None => break,
+        };
+        let tokens = &line.tokens;
         let mut token_iter = tokens.iter().peekable();
 
-        // println!("Looking at line: {:?}", line_number);
+        // println!("Looking at line: {:?}", current_line_number);
         if !tokens.is_empty() {
             let lexer::TokenAndPos(pos, ref token) = *token_iter.next().unwrap();
             // Set default value
@@ -64,13 +70,13 @@ pub fn evaluate(code_lines: Vec<lexer::LineOfCode>) -> Result<String, String> {
                     line_has_goto = true;
                     match token_iter.next() {
                         Some(&lexer::TokenAndPos(pos, token::Token::Number(number))) => {
-                            let n = lexer::LineNumber(number as u32);
+                            let n = number as u32;
                             match line_map.get(&n) {
-                                Some(index) => line_index = *index,
+                                Some(_target_line) => current_line_number = n,
                                 _ => {
                                     return Err(format!(
                                         "At {:?}, {} invalid target line for GOTO",
-                                        line_number, pos
+                                        line.line_number, pos
                                     ))
                                 }
                             }
@@ -79,14 +85,14 @@ pub fn evaluate(code_lines: Vec<lexer::LineOfCode>) -> Result<String, String> {
                             return Err(format!(
                                 "At {:?}, {} GOTO must be followed by valid line \
                                                 number",
-                                line_number, pos
+                                line.line_number, pos
                             ));
                         }
                         None => {
                             return Err(format!(
                                 "At {:?}, {} GOTO must be followed by a line \
                                                 number",
-                                line_number,
+                                line.line_number,
                                 // Adding 4 to give the position past GOTO
                                 pos + 4
                             ));
@@ -114,13 +120,13 @@ pub fn evaluate(code_lines: Vec<lexer::LineOfCode>) -> Result<String, String> {
                         (_, _, Err(e)) => {
                             return Err(format!(
                                 "At {:?}, {} error in LET expression: {}",
-                                line_number, pos, e
+                                line.line_number, pos, e
                             ))
                         }
                         _ => {
                             return Err(format!(
                                 "At {:?}, {} invalid syntax for LET.",
-                                line_number, pos
+                                line.line_number, pos
                             ));
                         }
                     }
@@ -137,7 +143,7 @@ pub fn evaluate(code_lines: Vec<lexer::LineOfCode>) -> Result<String, String> {
                             return Err(format!(
                                 "At {:?}. {} PRINT must be followed by valid \
                                                 expression",
-                                line_number, pos
+                                line.line_number, pos
                             ))
                         }
                     }
@@ -163,7 +169,7 @@ pub fn evaluate(code_lines: Vec<lexer::LineOfCode>) -> Result<String, String> {
                             return Err(format!(
                                 "At {:?}, {} INPUT must be followed by a \
                                                 variable name",
-                                line_number,
+                                line.line_number,
                                 // Adding 5 to put position past INPUT
                                 pos + 5
                             ));
@@ -187,14 +193,14 @@ pub fn evaluate(code_lines: Vec<lexer::LineOfCode>) -> Result<String, String> {
                         ) => {
                             if *value {
                                 line_has_goto = true;
-                                let n = lexer::LineNumber(*number as u32);
+                                let n = *number as u32;
                                 match line_map.get(&n) {
-                                    Some(index) => line_index = *index,
+                                    Some(_target_line) => current_line_number = n,
                                     _ => {
                                         return Err(format!(
                                             "At {:?}, {} invalid target line for \
                                                             IF",
-                                            line_number, pos
+                                            line.line_number, pos
                                         ))
                                     }
                                 }
@@ -203,14 +209,14 @@ pub fn evaluate(code_lines: Vec<lexer::LineOfCode>) -> Result<String, String> {
                         _ => {
                             return Err(format!(
                                 "At {:?}, {}, invalid syntax for IF.",
-                                line_number, pos
+                                line.line_number, pos
                             ));
                         }
                     }
                 }
 
                 _ => {
-                    return Err(format!("At {:?}, {} invalid syntax", line_number, pos));
+                    return Err(format!("At {:?}, {} invalid syntax", line.line_number, pos));
                 }
             }
         }
@@ -219,10 +225,11 @@ pub fn evaluate(code_lines: Vec<lexer::LineOfCode>) -> Result<String, String> {
         // println!("Current context: {:?}", context);
 
         if !line_has_goto {
-            line_index += 1;
-            if line_index == num_lines {
-                break;
-            }
+            // Move to the next line number in the BTreeMap
+            current_line_number = match line_map.range((current_line_number + 1)..).next() {
+                Some((&next_line_number, _)) => next_line_number,
+                None => break,
+            };
         }
     }
 

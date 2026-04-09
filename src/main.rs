@@ -5,6 +5,8 @@ use std::io::{self, Read, Write};
 use std::fs::File;
 use std::env;
 
+use std::collections::BTreeMap;
+
 use rbasic::lexer;
 use rbasic::evaluator;
 
@@ -84,8 +86,12 @@ fn main() {
                     continue;
                 }
                 "LIST" => {
-                    for line in &code_lines {
-                        println!("{}", line.text.as_deref().unwrap_or(""));
+                    let mut lines = BTreeMap::new();
+                    evaluator::get_line_map(&code_lines, &mut lines);
+                    for (_, line) in &lines {
+                        if let Some(l) = &line.text {
+                            println!("{}", l);
+                        }
                     }
                     continue;
                 }
