@@ -243,7 +243,7 @@ impl RBasicValue {
             (&RBasicValue::String(ref string1), &RBasicValue::String(ref string2)) => {
                 Ok(string1 < string2)
             }
-            (&RBasicValue::Bool(bool1), &RBasicValue::Bool(bool2)) => Ok(bool1 == bool2),
+            (&RBasicValue::Bool(bool1), &RBasicValue::Bool(bool2)) => Ok(!bool1 && bool2),
             (&RBasicValue::Number(number1), &RBasicValue::String(ref string2)) => {
                 let number2 = i32::from_str(string2.as_str());
 

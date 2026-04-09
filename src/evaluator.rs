@@ -281,7 +281,10 @@ fn parse_expression(
                     None => return Err("Mismatched parenthesis in expression".to_string()),
                 }
             },
-            _ => unreachable!(),
+            Some(&lexer::TokenAndPos(_, ref tok)) => {
+                return Err(format!("Unexpected token {:?} in expression", tok))
+            }
+            None => break,
         }
     }
 
