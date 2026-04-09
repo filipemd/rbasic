@@ -16,6 +16,7 @@ pub enum Token {
     NotEqual,
     Multiply,
     Divide,
+    Modulus,
     Minus,
     Plus,
 
@@ -54,6 +55,7 @@ impl Token {
             "<>" => Some(Token::NotEqual),
             "*" => Some(Token::Multiply),
             "/" => Some(Token::Divide),
+            "%" => Some(Token::Modulus),
             // Yes, this is also Token::UMinus
             "-" => Some(Token::Minus),
             "+" => Some(Token::Plus),
@@ -75,7 +77,7 @@ impl Token {
         match *self {
             Token::Equals | Token::LessThan | Token::GreaterThan | Token::LessThanEqual |
             Token::GreaterThanEqual | Token::NotEqual | Token::Multiply | Token::Divide |
-            Token::Minus | Token::Plus | Token::UMinus | Token::Bang => true,
+            Token::Modulus | Token::Minus | Token::Plus | Token::UMinus | Token::Bang => true,
             _ => false,
         }
     }
@@ -115,7 +117,7 @@ impl Token {
 
         match *self {
             Token::UMinus | Token::Bang => Ok(12),
-            Token::Multiply | Token::Divide => Ok(10),
+            Token::Multiply | Token::Divide | Token::Modulus => Ok(10),
             Token::Minus | Token::Plus => Ok(8),
             _ => Ok(4),
         }

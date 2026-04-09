@@ -380,6 +380,7 @@ fn parse_and_eval_expression<'a>(
                                 token::Token::Minus => operand1 - operand2,
                                 token::Token::Multiply => operand1 * operand2,
                                 token::Token::Divide => operand1 / operand2,
+                                token::Token::Modulus => operand1 % operand2,
                                 // Pattern guard prevents any other match
                                 _ => unreachable!(),
                             };

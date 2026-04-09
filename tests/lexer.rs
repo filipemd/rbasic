@@ -1,5 +1,3 @@
-
-
 use rbasic::lexer::*;
 use rbasic::token::*;
 
@@ -20,7 +18,7 @@ fn tokenize_line_with_goto() {
     let line_of_code = tokenize_line("10 GOTO 100", false).unwrap();
     assert_eq!(10, line_of_code.line_number);
     let tokens: Vec<TokenAndPos> = vec![TokenAndPos(3, Token::Goto),
-                                        TokenAndPos(8, Token::Number(100))];
+                                        TokenAndPos(8, Token::Number(100.0))];
     assert_eq!(tokens, line_of_code.tokens)
 }
 

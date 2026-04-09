@@ -4,6 +4,8 @@ use std::ops::Mul;
 use std::ops::Neg;
 use std::ops::Not;
 use std::ops::Sub;
+use std::ops::Rem;
+
 use std::str::FromStr;
 
 #[derive(Debug, Clone)]
@@ -186,6 +188,43 @@ impl Sub for RBasicValue {
                 }
             }
             _ => Err("Can only subtract numbers.".to_string()),
+        }
+    }
+}
+
+impl Rem for RBasicValue {
+    type Output = Result<RBasicValue, String>;
+
+    fn rem(self, other: RBasicValue) -> Self::Output {
+        match (self, other) {
+            (RBasicValue::Number(number1), RBasicValue::Number(number2)) => {
+                Ok(RBasicValue::Number(number1 % number2))
+            }
+            (RBasicValue::Number(number1), RBasicValue::String(string2)) => {
+                let number2 = f64::from_str(string2.as_str());
+
+                if let Result::Ok(number2_value) = number2 {
+                    Ok(RBasicValue::Number(number1 % number2_value))
+                } else {
+                    Err(format!(
+                        "Cannot mod number {} from string {}",
+                        number1, string2
+                    ))
+                }
+            }
+            (RBasicValue::String(string1), RBasicValue::Number(number2)) => {
+                let number1 = f64::from_str(string1.as_str());
+
+                if let Result::Ok(number1_value) = number1 {
+                    Ok(RBasicValue::Number(number1_value % number2))
+                } else {
+                    Err(format!(
+                        "Cannot mod string {} from number {}",
+                        string1, number2
+                    ))
+                }
+            }
+            _ => Err("Can only mod numbers.".to_string()),
         }
     }
 }

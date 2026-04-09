@@ -1,6 +1,3 @@
-
-
-
 use std::io::{self, Read, Write};
 use std::fs::File;
 use std::env;
