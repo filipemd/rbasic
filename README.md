@@ -63,10 +63,10 @@ following features:
 
   * ~~Floating point numbers~~
   * ~~Additional operators, like % (modulus)~~
-  * Built-in functions, like:
-    * Trigonometric Functions (SIN, COS, TAN)
-    * Random number generator (RAND(max value))
-    * CHR() and ASC() for dealing with character values
+  * ~~Built-in functions, like:~~
+    * ~~Trigonometric Functions (SIN, COS, TAN)~~
+    * ~~Random number generator (RAND(max value))~~
+    * ~~CHR() and ASC() for dealing with character values~~
   * ~~Interactive interpreter to give similar experience to Apple BASIC or GWBASIC~~
    
 I also want to increase the tests, outside of the current manual tests in the
