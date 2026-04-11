@@ -8,7 +8,7 @@ use std::ops::Rem;
 
 use std::str::FromStr;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum RBasicValue {
     String(String),
     Number(f64),
