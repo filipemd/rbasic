@@ -457,21 +457,21 @@ fn parse_and_eval_expression<'a>(
                                 value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.round())),
                                 _ => Err(format!("ROUND requires a numeric argument")),
                             },
-                            token::BuiltInFunction::Rng => match arg {
+                            token::BuiltInFunction::Rand => match arg {
                                 value::RBasicValue::Number(n) => {
                                     if n.fract() != 0.0 {
-                                        return Err("RNG requires an integer argument".to_string());
+                                        return Err("RAND requires an integer argument".to_string());
                                     }
 
                                     if n < 0.0 {
-                                        return Err("RNG requires a non-negative integer".to_string());
+                                        return Err("RAND requires a non-negative integer".to_string());
                                     }
 
                                     Ok(value::RBasicValue::Number(
                                         rand::rng().random_range(0..=n as i64) as f64
                                     ))
                                 }
-                                _ => Err(format!("RNG requires a numeric argument")),
+                                _ => Err(format!("RAND requires a numeric argument")),
                             },
                             token::BuiltInFunction::Num => match arg {
                                 value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n)),

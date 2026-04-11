@@ -186,7 +186,7 @@ fn test_all_builtin_functions() {
     let _ = BuiltInFunction::Floor;
     let _ = BuiltInFunction::Ceil;
     let _ = BuiltInFunction::Round;
-    let _ = BuiltInFunction::Rng;
+    let _ = BuiltInFunction::Rand;
     let _ = BuiltInFunction::Num;
     let _ = BuiltInFunction::Str;
     let _ = BuiltInFunction::Len;

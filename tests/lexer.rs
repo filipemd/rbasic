@@ -194,7 +194,7 @@ fn tokenize_keywords() {
 fn tokenize_builtins() {
     let builtins = vec![
         "SIN", "COS", "TAN", "SQRT", "ABS", "LOG", "EXP",
-        "FLOOR", "CEIL", "ROUND", "RNG", "NUM", "STR",
+        "FLOOR", "CEIL", "ROUND", "RAND", "NUM", "STR",
         "LEN", "CHR", "ASC"
     ];
     
