@@ -6,6 +6,7 @@ pub enum Token {
     Variable(String),
     Number(f64),
     BString(String),
+    BuiltInFn(BuiltInFunction),
 
     // Binary Operators
     Equals,
@@ -39,6 +40,29 @@ pub enum Token {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum BuiltInFunction {
+    Sin,
+    Cos,
+    Tan,
+    Asin,
+    Acos,
+    Atan,
+    Sqrt,
+    Abs,
+    Log,
+    Exp,
+    Floor,
+    Ceil,
+    Round,
+    Rng,
+    Num,
+    Str,
+    Len,
+    Chr,
+    Asc,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Associativity {
     Left,
     Right,
@@ -69,6 +93,25 @@ impl Token {
             "PRINT" => Some(Token::Print),
             "REM" => Some(Token::Rem),
             "THEN" => Some(Token::Then),
+            "SIN" => Some(Token::BuiltInFn(BuiltInFunction::Sin)),
+            "COS" => Some(Token::BuiltInFn(BuiltInFunction::Cos)),
+            "TAN" => Some(Token::BuiltInFn(BuiltInFunction::Tan)),
+            "ASIN" => Some(Token::BuiltInFn(BuiltInFunction::Asin)),
+            "ACOS" => Some(Token::BuiltInFn(BuiltInFunction::Acos)),
+            "ATAN" => Some(Token::BuiltInFn(BuiltInFunction::Atan)),
+            "SQRT" => Some(Token::BuiltInFn(BuiltInFunction::Sqrt)),
+            "ABS" => Some(Token::BuiltInFn(BuiltInFunction::Abs)),
+            "LOG" => Some(Token::BuiltInFn(BuiltInFunction::Log)),
+            "EXP" => Some(Token::BuiltInFn(BuiltInFunction::Exp)),
+            "FLOOR" => Some(Token::BuiltInFn(BuiltInFunction::Floor)),
+            "CEIL" => Some(Token::BuiltInFn(BuiltInFunction::Ceil)),
+            "ROUND" => Some(Token::BuiltInFn(BuiltInFunction::Round)),
+            "RNG" => Some(Token::BuiltInFn(BuiltInFunction::Rng)),
+            "NUM" => Some(Token::BuiltInFn(BuiltInFunction::Num)),
+            "STR" => Some(Token::BuiltInFn(BuiltInFunction::Str)),
+            "LEN" => Some(Token::BuiltInFn(BuiltInFunction::Len)),
+            "CHR" => Some(Token::BuiltInFn(BuiltInFunction::Chr)),
+            "ASC" => Some(Token::BuiltInFn(BuiltInFunction::Asc)),
             _ => None,
         }
     }
@@ -105,7 +148,8 @@ impl Token {
         match *self {
             Token::Variable(_) |
             Token::Number(_) |
-            Token::BString(_) => true,
+            Token::BString(_) |
+            Token::BuiltInFn(_) => true,
             _ => false,
         }
     }

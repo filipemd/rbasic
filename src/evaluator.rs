@@ -9,6 +9,9 @@ use std::collections::VecDeque;
 use std::io;
 use std::iter::Peekable;
 use std::slice::Iter;
+use std::str::FromStr;
+
+use rand::RngExt;
 
 #[derive(Debug)]
 struct RBasicContext {
@@ -249,8 +252,12 @@ fn parse_expression(
         }
 
         match token_iter.next() {
-            Some(&lexer::TokenAndPos(_, ref value_token)) if value_token.is_value() => {
+            Some(&lexer::TokenAndPos(_, ref value_token)) if value_token.is_value() && !matches!(value_token, token::Token::BuiltInFn(_)) => {
                 output_queue.push_back(value_token.clone())
+            }
+            Some(&lexer::TokenAndPos(_, token::Token::BuiltInFn(ref func))) => {
+                // Push built-in function to operator stack for function call handling
+                operator_stack.push(token::Token::BuiltInFn(func.clone()));
             }
             Some(&lexer::TokenAndPos(_, ref op_token)) if op_token.is_operator() => {
                 if !operator_stack.is_empty() {
@@ -388,6 +395,141 @@ fn parse_and_eval_expression<'a>(
                                 Ok(value) => stack.push(value),
                                 Err(e) => return Err(e),
                             }
+                        }
+                    }
+                    Some(token::Token::BuiltInFn(ref func)) => {
+                        if stack.len() < 1 {
+                            return Err(format!("Function {:?} requires an argument", func));
+                        }
+                        let arg = stack.pop().unwrap();
+
+                        let result = match func {
+                            // Numeric functions
+                            token::BuiltInFunction::Sin => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.sin())),
+                                _ => Err(format!("SIN requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Cos => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.cos())),
+                                _ => Err(format!("COS requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Tan => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.tan())),
+                                _ => Err(format!("TAN requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Asin => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.asin())),
+                                _ => Err(format!("ASIN requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Acos => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.acos())),
+                                _ => Err(format!("ACOS requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Atan => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.atan())),
+                                _ => Err(format!("ATAN requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Sqrt => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.sqrt())),
+                                _ => Err(format!("SQRT requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Abs => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.abs())),
+                                _ => Err(format!("ABS requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Log => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.ln())),
+                                _ => Err(format!("LOG requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Exp => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.exp())),
+                                _ => Err(format!("EXP requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Floor => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.floor())),
+                                _ => Err(format!("FLOOR requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Ceil => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.ceil())),
+                                _ => Err(format!("CEIL requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Round => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n.round())),
+                                _ => Err(format!("ROUND requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Rng => match arg {
+                                value::RBasicValue::Number(n) => {
+                                    if n.fract() != 0.0 {
+                                        return Err("RNG requires an integer argument".to_string());
+                                    }
+
+                                    if n < 0.0 {
+                                        return Err("RNG requires a non-negative integer".to_string());
+                                    }
+
+                                    Ok(value::RBasicValue::Number(
+                                        rand::rng().random_range(0..=n as i64) as f64
+                                    ))
+                                }
+                                _ => Err(format!("RNG requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Num => match arg {
+                                value::RBasicValue::Number(n) => Ok(value::RBasicValue::Number(n)),
+                                value::RBasicValue::String(s) => {
+                                    match f64::from_str(&s) {
+                                        Ok(n) => Ok(value::RBasicValue::Number(n)),
+                                        Err(_) => Err(format!("NUM: cannot parse '{}' as a number", s)),
+                                    }
+                                }
+                                value::RBasicValue::Bool(b) => {
+                                    Ok(value::RBasicValue::Number(if b { 1.0 } else { 0.0 }))
+                                }
+                            },
+                            token::BuiltInFunction::Str => match arg {
+                                value::RBasicValue::Number(n) => {
+                                    // Remove trailing zeros for cleaner output
+                                    if n.fract() == 0.0 && n.abs() < 1e15 {
+                                        Ok(value::RBasicValue::String((n as i64).to_string()))
+                                    } else {
+                                        Ok(value::RBasicValue::String(n.to_string()))
+                                    }
+                                }
+                                value::RBasicValue::String(s) => {
+                                    Ok(value::RBasicValue::String(s))
+                                }
+                                value::RBasicValue::Bool(b) => {
+                                    Ok(value::RBasicValue::String(
+                                        if b { "true".to_string() } else { "false".to_string() }
+                                    ))
+                                }
+                            },
+                            // String functions
+                            token::BuiltInFunction::Len => match arg {
+                                value::RBasicValue::String(s) => Ok(value::RBasicValue::Number(s.len() as f64)),
+                                _ => Err(format!("LEN requires a string argument")),
+                            },
+                            token::BuiltInFunction::Chr => match arg {
+                                value::RBasicValue::Number(n) => {
+                                    let ch = std::char::from_u32(n as u32)
+                                        .ok_or_else(|| format!("CHR: invalid character code {}", n))?;
+                                    Ok(value::RBasicValue::String(ch.to_string()))
+                                },
+                                _ => Err(format!("CHR requires a numeric argument")),
+                            },
+                            token::BuiltInFunction::Asc => match arg {
+                                value::RBasicValue::String(s) => {
+                                    let code = s.chars().next()
+                                        .map(|c| c as u32 as f64)
+                                        .ok_or_else(|| "ASC: empty string".to_string())?;
+                                    Ok(value::RBasicValue::Number(code))
+                                },
+                                _ => Err(format!("ASC requires a string argument")),
+                            },
+                        };
+
+                        match result {
+                            Ok(value) => stack.push(value),
+                            Err(e) => return Err(e),
                         }
                     }
                     None => unreachable!(),
